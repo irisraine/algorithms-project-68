@@ -51,9 +51,9 @@ class RoutePrefixTree:
                     node_has_segment = True
                 elif current_node.is_dynamic:
                     param = node_segment[1:]
-                    param_constraints = current_node.constraints[param]
+                    param_constraint = current_node.constraints[param]
                     node_has_segment = self.check_constraints(
-                        segment, param_constraints
+                        segment, param_constraint
                     )
                 if node_has_segment:
                     current_node = current_node.children[node_segment]
