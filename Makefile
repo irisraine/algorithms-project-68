@@ -6,3 +6,6 @@ lint:
 
 tests:
 	poetry run pytest
+	
+coverage:
+	poetry run pytest --cov=router tests/ --cov-report xml	
