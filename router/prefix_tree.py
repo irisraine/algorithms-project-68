@@ -5,6 +5,7 @@ class RoutePrefixTreeNode:
     def __init__(self, value):
         self.value = value
         self.children = {}
+        self.is_dynamic = None
         self.endpoint = False
         self.pattern_path = None
         self.handler = None
@@ -27,6 +28,7 @@ class RoutePrefixTree:
         for segment in segments:
             if segment not in current_node.children:
                 current_node.children[segment] = RoutePrefixTreeNode(segment)
+                current_node.is_dynamic = True if segment.startswith(":") else False
             current_node = current_node.children[segment]
             pattern_path.append(segment)
         current_node.endpoint = True
@@ -39,10 +41,8 @@ class RoutePrefixTree:
         for segment in segments:
             node_has_segment = False
             for node_segment in current_node.children:
-                node_has_segment = (segment == node_segment)
-                if node_segment.startswith(":"):
-                    node_has_segment = re.match(r'(\w+)', segment)
-                if node_has_segment:
+                if (segment == node_segment) or (current_node.is_dynamic and re.match(r'(\w+)', segment)):
+                    node_has_segment = True
                     current_node = current_node.children[node_segment]
                     break
             if not node_has_segment:
