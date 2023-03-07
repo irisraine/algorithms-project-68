@@ -1,8 +1,9 @@
-from prefix_tree import RoutePrefixTree
+from .prefix_tree import RoutePrefixTree
 
 
 class MakeRouter:
-    ALLOWED_HTTP_METHODS = ['GET', 'POST', 'DELETE', 'PUT', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT']
+    ALLOWED_HTTP_METHODS = ['GET', 'POST', 'DELETE', 'PUT',
+                            'HEAD', 'OPTIONS', 'TRACE', 'CONNECT']
 
     def __init__(self, routes):
         self.routes_tree = RoutePrefixTree()
@@ -31,5 +32,6 @@ class MakeRouter:
         pattern_path_parsed = pattern_path.split('/')
         for given_path_segment, pattern_path_segment in zip(given_path_parsed, pattern_path_parsed):
             if pattern_path_segment.startswith(":"):
-                params.setdefault(pattern_path_segment[1:], given_path_segment)
+                param = pattern_path_segment[1:]
+                params.setdefault(param, given_path_segment)
         return params
