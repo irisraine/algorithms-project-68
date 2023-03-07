@@ -1,47 +1,30 @@
-import re
-import json
+from prefix_tree import RoutePrefixTree
 
 
 class MakeRouter:
     def __init__(self, routes):
-        self.routes = routes
-        self.path = None
-        self.handler = None
-        self.params = None
-
-    def __str__(self):
-        router_elements = json.dumps({
-            'path': self.path,
-            'handler': str(self.handler),
-            'params': self.params}
-        )
-        return router_elements
+        self.routes_tree = RoutePrefixTree()
+        for route in routes:
+            self.routes_tree.add_route(route)
 
     def serve(self, path):
-        dynamic_placeholder = r'(\w+)'
-        slash_escaped = r'\/'
+        target_route = self.routes_tree.find_route(path)
+        if not target_route:
+            raise Exception("Incorrect path!")
+        pattern_path = target_route.get_pattern_path()
+        result = {
+            'path': pattern_path,
+            'handler': target_route.get_handler(),
+            'params': self.get_route_params(path, pattern_path),
+        }
+        return result
+
+    @staticmethod
+    def get_route_params(given_path, pattern_path):
         params = {}
-
-        for route in self.routes:
-            pattern_parsed = route['path'].split('/')
-            pattern_regex_segments = []
-            for pattern_segment in pattern_parsed:
-                if pattern_segment and pattern_segment[0] == ':':
-                    pattern_regex_segments.append(dynamic_placeholder)
-                    params.setdefault(pattern_segment[1:], '')
-                else:
-                    pattern_regex_segments.append(pattern_segment)
-            pattern_regex = f'^{slash_escaped.join(pattern_regex_segments)}$'
-            is_match = re.match(pattern_regex, path)
-            if is_match:
-                path_parsed = path.split('/')
-                for pattern_segment, path_segment in zip(pattern_parsed, path_parsed):
-                    if pattern_segment[1:] in params.keys():
-                        params[pattern_segment[1:]] = path_segment
-
-                self.path = route['path']
-                self.handler = route['handler']
-                self.params = params
-
-                return self
-        raise Exception("Incorrect path!")
+        given_path_parsed = given_path.split('/')
+        pattern_path_parsed = pattern_path.split('/')
+        for given_path_segment, pattern_path_segment in zip(given_path_parsed, pattern_path_parsed):
+            if pattern_path_segment.startswith(":"):
+                params.setdefault(pattern_path_segment[1:], given_path_segment)
+        return params
