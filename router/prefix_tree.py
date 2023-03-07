@@ -6,15 +6,16 @@ class RoutePrefixTreeNode:
         self.value = value
         self.children = {}
         self.is_dynamic = None
-        self.endpoint = False
-        self.pattern_path = None
-        self.handler = None
+        self.endpoint = {
+            'pattern_path': '',
+            'methods': {}
+        }
 
     def get_pattern_path(self):
-        return self.pattern_path
+        return self.endpoint['pattern_path']
 
-    def get_handler(self):
-        return self.handler
+    def get_handler(self, method):
+        return self.endpoint['methods'][method]
 
 
 class RoutePrefixTree:
@@ -31,13 +32,12 @@ class RoutePrefixTree:
                 current_node.is_dynamic = True if segment.startswith(":") else False
             current_node = current_node.children[segment]
             pattern_path.append(segment)
-        current_node.endpoint = True
-        current_node.handler = route['handler']
-        current_node.pattern_path = '/'.join(pattern_path)
+        current_node.endpoint['methods'].setdefault(route['method'], route['handler'])
+        current_node.endpoint['pattern_path'] = '/'.join(pattern_path)
 
-    def find_route(self, route_path):
+    def find_route(self, request):
         current_node = self.root
-        segments = route_path.split('/')
+        segments = request['path'].split('/')
         for segment in segments:
             node_has_segment = False
             for node_segment in current_node.children:
@@ -47,4 +47,6 @@ class RoutePrefixTree:
                     break
             if not node_has_segment:
                 return None
+        if request['method'] not in current_node.endpoint['methods']:
+            return None
         return current_node
