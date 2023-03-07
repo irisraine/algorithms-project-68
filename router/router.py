@@ -26,12 +26,13 @@ class MakeRouter:
         return result
 
     @staticmethod
-    def get_route_params(given_path, pattern_path):
+    def get_route_params(request_path, pattern_path):
         params = {}
-        given_path_parsed = given_path.split('/')
+        request_path_parsed = request_path.split('/')
         pattern_path_parsed = pattern_path.split('/')
-        for given_path_segment, pattern_path_segment in zip(given_path_parsed, pattern_path_parsed):
+        paths_mapped = zip(request_path_parsed, pattern_path_parsed)
+        for request_path_segment, pattern_path_segment in paths_mapped:
             if pattern_path_segment.startswith(":"):
                 param = pattern_path_segment[1:]
-                params.setdefault(param, given_path_segment)
+                params.setdefault(param, request_path_segment)
         return params

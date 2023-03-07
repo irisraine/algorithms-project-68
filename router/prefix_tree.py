@@ -35,10 +35,13 @@ class RoutePrefixTree:
                     current_node.constraints = route['constraints']
             current_node = current_node.children[segment]
             pattern_path.append(segment)
-        current_node.endpoint['methods'].setdefault(route['method'], route['handler'])
+        current_node.endpoint['methods'].setdefault(
+            route['method'],
+            route['handler']
+        )
         current_node.endpoint['pattern_path'] = '/'.join(pattern_path)
 
-    def find_route(self, request):
+    def find_route(self, request):  # noqa: C901
         current_node = self.root
         segments = request['path'].split('/')
         for segment in segments:
@@ -48,7 +51,10 @@ class RoutePrefixTree:
                     node_has_segment = True
                 elif current_node.is_dynamic:
                     param = node_segment[1:]
-                    node_has_segment = self.check_constraints(segment, current_node.constraints[param])
+                    param_constraints = current_node.constraints[param]
+                    node_has_segment = self.check_constraints(
+                        segment, param_constraints
+                    )
                 if node_has_segment:
                     current_node = current_node.children[node_segment]
                     break
