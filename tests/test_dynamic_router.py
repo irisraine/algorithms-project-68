@@ -84,7 +84,7 @@ dynamic_routing_test_cases = [
 
 
 @pytest.mark.parametrize('dynamic_request, expected_result', dynamic_routing_test_cases)
-def test_static_routes(dynamic_request, expected_result):
+def test_dynamic_routes(dynamic_request, expected_result):
     dynamic_router = MakeRouter(dynamic_routes)
     result_raw = dynamic_router.serve(dynamic_request)
     result = {

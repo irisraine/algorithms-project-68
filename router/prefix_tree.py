@@ -7,16 +7,14 @@ class RoutePrefixTreeNode:
         self.children = {}
         self.is_dynamic = False
         self.constraints = {}
-        self.endpoint = {
-            'pattern_path': '',
-            'methods': {}
-        }
+        self.endpoint = ''
+        self.handlers = {}
 
     def get_pattern_path(self):
-        return self.endpoint['pattern_path']
+        return self.endpoint
 
     def get_handler(self, method):
-        return self.endpoint['methods'][method]
+        return self.handlers[method]
 
 
 class RoutePrefixTree:
@@ -35,11 +33,11 @@ class RoutePrefixTree:
                     current_node.constraints = route['constraints']
             current_node = current_node.children[segment]
             pattern_path.append(segment)
-        current_node.endpoint['methods'].setdefault(
+        current_node.handlers.setdefault(
             route['method'],
             route['handler']
         )
-        current_node.endpoint['pattern_path'] = '/'.join(pattern_path)
+        current_node.endpoint = '/'.join(pattern_path)
 
     def find_route(self, request):  # noqa: C901
         current_node = self.root
@@ -60,7 +58,7 @@ class RoutePrefixTree:
                     break
             if not node_has_segment:
                 return None
-        if request['method'] not in current_node.endpoint['methods']:
+        if request['method'] not in current_node.handlers:
             return None
         return current_node
 
